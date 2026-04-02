@@ -1,31 +1,43 @@
-# Contributing to Stashly
+# Contributing to [01;31m[K# [m[Kcachekit
 
-Standardized Phenotype enterprise contribution guidelines.
+First off, thank you for considering contributing to **[01;31m[K# [m[Kcachekit**! It's people like you who make this project better for everyone.
 
-## Development Workflow
+## Code of Conduct
 
-- Follow the branch-based delivery protocol in CLAUDE.md
-- Ensure all CI policy gates are green before requesting review
-- Document all user-facing changes in CHANGELOG.md
+By participating in this project, you agree to abide by our Code of Conduct.
 
-## Code Standards
+## How Can I Contribute?
 
-- Follow language-specific style guides
-- All public APIs must have documentation
-- Tests are required for all new functionality
-- Run linting and formatting before committing
+### Reporting Bugs
 
-## Pull Request Process
+- Use the Bug Report issue template
+- Provide a clear and descriptive title
+- Describe the exact steps to reproduce the problem
 
-1. Create feature branch from main
-2. Implement changes with tests
-3. Ensure all CI checks pass
-4. Request review from maintainer
-5. Squash and merge after approval
+### Suggesting Enhancements
 
-## Reporting Issues
+- Check the Issues to see if the enhancement has already been suggested
+- Use the Feature Request issue template
 
-- Use issue templates when available
-- Include reproduction steps
-- Specify environment details
-- Tag appropriately (bug, feature, docs)
+### Pull Requests
+
+1. Fork the repo and create your branch from `main`
+2. If you've added code that should be tested, add tests
+3. If you've changed APIs, update the documentation
+4. Ensure the test suite passes (`cargo test`)
+5. Make sure your code lints (`cargo clippy -- -D warnings`)
+6. Format your code (`cargo fmt`)
+
+## Development Setup
+
+```bash
+# Clone the repository\ngit clone <url>\ncd [01;31m[K# [m[Kcachekit\n\n# Install dependencies\ncargo fetch\n\n# Run tests\ncargo test\n\n# Run linter\ncargo clippy -- -D warnings\n\n# Format code\ncargo fmt\n
+```
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT OR Apache-2.0 license.
+
+---
+
+Thank you for your contributions!

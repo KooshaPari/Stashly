@@ -2,41 +2,36 @@
 
 ## Supported Versions
 
-We provide security updates for the following versions of **Stashly**:
-
 | Version | Supported          |
-| ------- | ------------------ |
-| v0.1.x  | :white_check_mark: |
-| < v0.1  | :x:                |
+|---------|--------------------|
+| 1.x     | :white_check_mark: |
+| < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-We take the security of **Stashly** seriously. If you discover a security vulnerability, please do NOT open a public issue. Instead, report it privately.
+We take the security of **[01;31m[K# [m[Kcachekit** seriously. If you discover a security vulnerability, please do NOT open a public issue. Instead, report it privately.
 
-Please report any security concerns directly to the maintainers at [kooshapari@gmail.com](mailto:kooshapari@gmail.com).
+### What to include
 
-### What to include in your report
 - A detailed description of the vulnerability
 - Steps to reproduce (proof of concept)
-- Potential impact on the system or user data
+- Potential impact
 - Any suggested fixes or mitigations
 
 We will acknowledge your report within 48 hours and provide a timeline for resolution.
 
-## Security Best Practices (Rust)
+## Security Best Practices
 
-- **Dependency Scanning**: All dependencies are scanned for vulnerabilities
-- **Input Validation**: All user inputs are validated and sanitized
-- **Secret Management**: Secrets are managed via environment variables, never hardcoded
-- **Error Handling**: Error messages do not expose sensitive information
-- **Logging**: Sensitive data is redacted from logs
+Keep dependencies updated and review security advisories regularly.
 
-## Hardening Measures
+## Dependency Scanning
 
-- **Static Analysis**: Regular SAST scans using security linters
-- **Dependency Audit**: Automated vulnerability scanning in CI
-- **Code Review**: Security-focused review for all changes
-- **Minimal Dependencies**: Keep dependency count minimal to reduce attack surface
+[01;31m[K# [m[Kcachekit regularly scans dependencies for known vulnerabilities:
+
+- cargo audit
+- Dependabot for automated updates
+- Security advisories from RustSec
 
 ---
-Thank you for helping keep the ecosystem secure!
+
+Thank you for helping keep the community secure!
