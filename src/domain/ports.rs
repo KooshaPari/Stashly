@@ -1,7 +1,7 @@
 //! Port definitions.
 
 use async_trait::async_trait;
-use super::{CacheKey, CacheValue, Entry};
+use super::{CacheKey, CacheValue};
 
 /// Trait for cache implementations.
 #[async_trait]

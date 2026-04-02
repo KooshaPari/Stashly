@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use std::hash::{Hash, Hasher};
 use std::borrow::Cow;
+use super::errors::CacheError;
 
 /// Cache key.
 #[derive(Debug, Clone, Serialize, Deserialize)]

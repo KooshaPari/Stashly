@@ -1,12 +1,12 @@
 //! In-memory cache adapter.
 
-use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
+use std::num::NonZeroUsize;
 use async_trait::async_trait;
 use lru::LruCache;
 use crate::domain::{
     Cache, CacheKey, CacheValue, Entry,
-    policy::LruPolicy,
+    policy::{EvictionPolicy, LruPolicy},
 };
 use chrono::Duration;
 
@@ -19,14 +19,16 @@ pub struct InMemoryCache {
 
 impl InMemoryCache {
     pub fn new(max_capacity: usize) -> Self {
+        let capacity = NonZeroUsize::new(max_capacity)
+            .expect("max_capacity must be greater than zero");
         Self {
-            cache: Arc::new(RwLock::new(LruCache::new(max_capacity))),
+            cache: Arc::new(RwLock::new(LruCache::new(capacity))),
             policy: Arc::new(RwLock::new(LruPolicy::new())),
             max_capacity,
         }
     }
 
-    pub fn with_ttl(mut self, ttl: Duration) -> Self {
+    pub fn with_ttl(self, _ttl: Duration) -> Self {
         // TTL support would require additional tracking
         self
     }
@@ -36,7 +38,7 @@ impl InMemoryCache {
 impl Cache for InMemoryCache {
     async fn get(&self, key: &CacheKey) -> Result<Option<CacheValue>, String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
-        let policy = self.policy.write().map_err(|e| e.to_string())?;
+        let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
         if let Some(entry) = cache.get_mut(key) {
             if entry.is_expired() {
@@ -55,13 +57,14 @@ impl Cache for InMemoryCache {
 
     async fn set(&self, key: CacheKey, value: CacheValue) -> Result<(), String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
-        let policy = self.policy.write().map_err(|e| e.to_string())?;
+        let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
         // Evict if necessary
         while cache.len() >= self.max_capacity {
             if let Some(evict_key) = policy.select_eviction() {
-                cache.pop(&CacheKey::from(evict_key.clone()));
-                policy.remove(&evict_key);
+                let eviction_key = CacheKey::from(evict_key.clone());
+                cache.pop(&eviction_key);
+                policy.remove(evict_key.as_str());
             } else {
                 break;
             }
@@ -76,7 +79,7 @@ impl Cache for InMemoryCache {
 
     async fn remove(&self, key: &CacheKey) -> Result<(), String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
-        let policy = self.policy.write().map_err(|e| e.to_string())?;
+        let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
         cache.pop(key);
         policy.remove(key.as_str());

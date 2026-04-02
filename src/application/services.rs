@@ -61,4 +61,9 @@ impl CacheService {
             .await
             .map_err(CacheError::BackendError)
     }
+
+    /// Check whether the cache is empty.
+    pub async fn is_empty(&self) -> Result<bool, CacheError> {
+        self.len().await.map(|len| len == 0)
+    }
 }

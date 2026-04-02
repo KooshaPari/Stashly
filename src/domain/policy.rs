@@ -1,7 +1,5 @@
 //! Eviction policies.
 
-use super::cache::Entry;
-
 /// Trait for eviction policies.
 pub trait EvictionPolicy: Send + Sync {
     /// Record an access to an entry.

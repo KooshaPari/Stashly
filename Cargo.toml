@@ -42,3 +42,5 @@ tempfile = "3.8"
 [profile.release]
 lto = true
 codegen-units = 1
+
+[workspace]
