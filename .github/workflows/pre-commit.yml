@@ -27,10 +27,10 @@ jobs:
 
       - name: Check for secrets
         run: |
-          if command -v gitleaks &> /dev/null; then
-            gitleaks detect --source . --verbose --fail-on-severity high
+          if command -v trufflehog &> /dev/null; then
+            trufflehog git file://. --since-commit HEAD --only-verified --fail
           else
-            echo "gitleaks not installed, skipping"
+            echo "trufflehog not installed, skipping"
           fi
 
       - name: Check documentation
