@@ -10,13 +10,10 @@ permissions:
   contents: read
 
 jobs:
-  update-release-draft:
+  release-drafter:
+    uses: KooshaPari/phenoShared/.github/workflows/reusable/release-drafter.yml@main
+    with:
+      config-name: release-drafter.yml
     permissions:
       contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: release-drafter/release-drafter@v6
-        with:
-          config-name: release-drafter.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      pull-requests: write
