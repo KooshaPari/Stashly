@@ -31,7 +31,7 @@ anyhow = "1.0"
 tracing = "0.1"
 
 # Caching
-lru = "0.17"
+lru = "0.18"
 dashmap = "6.1"
 parking_lot = "0.12"
 
