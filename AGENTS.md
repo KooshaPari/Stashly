@@ -1,48 +1,19 @@
 # AGENTS.md — Stashly
 
-Extends shelf-level AGENTS.md rules for Stashly.
-
-## Project Identity
-
+## Project Overview
 - **Name**: Stashly
-- **Description**: Universal caching abstraction with TTL, invalidation, and multi-backend support
-- **Language**: Rust
+- **Location**: KooshaPari/Stashly
+- **Status**: Active development
 
-## Project-Specific Rules
+## AgilePlus Mandate
+All work MUST be tracked in AgilePlus:
+- Reference: /Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus
+- CLI: `cd /Users/kooshapari/CodeProjects/Phenotype/repos/AgilePlus && agileplus <command>`
 
-### Test-First Mandate
+## Git & Branch Discipline
+- Feature branches: `worktrees/<topic>/`
+- Canonical: `main`
+- Never commit directly to `main`
 
-- **For NEW modules**: test file MUST exist before implementation file
-- **For BUG FIXES**: failing test MUST be written before the fix
-- **For REFACTORS**: existing tests must pass before AND after
-
-### Quality Gates
-
-All PRs must pass:
-- `cargo test --workspace`
-- `cargo clippy --workspace -- -D warnings`
-- `cargo fmt --check`
-
-### Commit Messages
-
-Format: `<type>(<scope>): <description>`
-
-Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`
-
-### File Organization
-
-```
-src/
-├── lib.rs           # Main library entry
-├── cache/           # Cache traits and implementations
-├── backend/         # Backend adapters
-├── eviction/        # Eviction strategies
-└── ttl/            # TTL management
-```
-
-## Testing Requirements
-
-- Unit tests for all public APIs
-- Property-based tests for cache behavior
-- Integration tests for backend adapters
-- Minimum 80% code coverage
+## References
+- Parent workspace: /Users/kooshapari/CodeProjects/Phenotype/repos/CLAUDE.md
