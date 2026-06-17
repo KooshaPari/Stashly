@@ -1,3 +1,7 @@
+> **Work-state:** beta — `[########--] 80%`
+>
+> Multi-tier caching framework (L1/L2/L3), singleflight, TTL, CQRS unified. Backends (Memory, Redis, Memcached, Disk) ported. Tests + metrics wired. Pending: load testing, persistence layer verification, edge-case stress tests.
+
 # Stashly
 
 **Universal caching abstraction with TTL, multi-tier, singleflight, and multi-backend support.**
