@@ -1,14 +1,16 @@
 //! In-memory cache adapter.
 
-use std::sync::{Arc, RwLock};
 use std::num::NonZeroUsize;
+use std::sync::{Arc, RwLock};
+
 use async_trait::async_trait;
-use lru::LruCache;
-use crate::domain::{
-    Cache, CacheKey, CacheValue, Entry,
-    policy::{EvictionPolicy, LruPolicy},
-};
 use chrono::Duration;
+use lru::LruCache;
+
+use crate::domain::{
+    policy::{EvictionPolicy, LruPolicy},
+    Cache, CacheKey, CacheValue, Entry,
+};
 
 /// In-memory cache implementation.
 pub struct InMemoryCache {
@@ -19,8 +21,8 @@ pub struct InMemoryCache {
 
 impl InMemoryCache {
     pub fn new(max_capacity: usize) -> Self {
-        let capacity = NonZeroUsize::new(max_capacity)
-            .expect("max_capacity must be greater than zero");
+        let capacity =
+            NonZeroUsize::new(max_capacity).expect("max_capacity must be greater than zero");
         Self {
             cache: Arc::new(RwLock::new(LruCache::new(capacity))),
             policy: Arc::new(RwLock::new(LruPolicy::new())),

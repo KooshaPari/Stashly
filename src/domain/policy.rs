@@ -23,10 +23,7 @@ pub struct LruPolicy {
 
 impl LruPolicy {
     pub fn new() -> Self {
-        Self {
-            order: Vec::new(),
-            access_order: std::collections::HashMap::new(),
-        }
+        Self { order: Vec::new(), access_order: std::collections::HashMap::new() }
     }
 }
 
@@ -65,9 +62,7 @@ pub struct LfuPolicy {
 
 impl LfuPolicy {
     pub fn new() -> Self {
-        Self {
-            access_counts: std::collections::HashMap::new(),
-        }
+        Self { access_counts: std::collections::HashMap::new() }
     }
 }
 
@@ -83,10 +78,7 @@ impl EvictionPolicy for LfuPolicy {
     }
 
     fn select_eviction(&self) -> Option<String> {
-        self.access_counts
-            .iter()
-            .min_by_key(|(_, count)| *count)
-            .map(|(k, _)| k.clone())
+        self.access_counts.iter().min_by_key(|(_, count)| *count).map(|(k, _)| k.clone())
     }
 
     fn remove(&mut self, key: &str) {
@@ -105,9 +97,7 @@ pub struct TtlPolicy {
 
 impl TtlPolicy {
     pub fn new() -> Self {
-        Self {
-            expiration_order: Vec::new(),
-        }
+        Self { expiration_order: Vec::new() }
     }
 }
 
@@ -124,10 +114,7 @@ impl EvictionPolicy for TtlPolicy {
 
     fn select_eviction(&self) -> Option<String> {
         let now = chrono::Utc::now();
-        self.expiration_order
-            .iter()
-            .find(|(_, expires)| *expires < now)
-            .map(|(k, _)| k.clone())
+        self.expiration_order.iter().find(|(_, expires)| *expires < now).map(|(k, _)| k.clone())
     }
 
     fn remove(&mut self, key: &str) {
@@ -161,9 +148,15 @@ mod tests {
     fn test_lfu_policy() {
         let mut policy = LfuPolicy::new();
 
-        for _ in 0..3 { policy.record_access("a"); }
-        for _ in 0..1 { policy.record_access("b"); }
-        for _ in 0..2 { policy.record_access("c"); }
+        for _ in 0..3 {
+            policy.record_access("a");
+        }
+        for _ in 0..1 {
+            policy.record_access("b");
+        }
+        for _ in 0..2 {
+            policy.record_access("c");
+        }
 
         assert_eq!(policy.select_eviction(), Some("b".to_string()));
     }

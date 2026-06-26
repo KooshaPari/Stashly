@@ -1,8 +1,9 @@
 //! Cache application service.
 
 use std::sync::Arc;
-use crate::domain::{Cache, CacheKey, CacheValue};
+
 use crate::domain::errors::CacheError;
+use crate::domain::{Cache, CacheKey, CacheValue};
 
 /// Cache service with typed operations.
 pub struct CacheService {
@@ -36,30 +37,22 @@ impl CacheService {
         value: &T,
     ) -> Result<(), CacheError> {
         let cache_value = CacheValue::serialize(value)?;
-        self.cache.set(key, cache_value)
-            .await
-            .map_err(CacheError::BackendError)
+        self.cache.set(key, cache_value).await.map_err(CacheError::BackendError)
     }
 
     /// Remove a key from the cache.
     pub async fn remove(&self, key: &CacheKey) -> Result<(), CacheError> {
-        self.cache.remove(key)
-            .await
-            .map_err(CacheError::BackendError)
+        self.cache.remove(key).await.map_err(CacheError::BackendError)
     }
 
     /// Check if a key exists.
     pub async fn contains(&self, key: &CacheKey) -> Result<bool, CacheError> {
-        self.cache.contains(key)
-            .await
-            .map_err(CacheError::BackendError)
+        self.cache.contains(key).await.map_err(CacheError::BackendError)
     }
 
     /// Get cache size.
     pub async fn len(&self) -> Result<usize, CacheError> {
-        self.cache.len()
-            .await
-            .map_err(CacheError::BackendError)
+        self.cache.len().await.map_err(CacheError::BackendError)
     }
 
     /// Check whether the cache is empty.

@@ -1,9 +1,11 @@
 //! Cache entities.
 
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
-use std::hash::{Hash, Hasher};
 use std::borrow::Cow;
+use std::hash::{Hash, Hasher};
+
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
 use super::errors::CacheError;
 
 /// Cache key.
@@ -65,11 +67,7 @@ pub struct CacheValue {
 
 impl CacheValue {
     pub fn new(data: Vec<u8>) -> Self {
-        Self {
-            data,
-            content_type: None,
-            created_at: Utc::now(),
-        }
+        Self { data, content_type: None, created_at: Utc::now() }
     }
 
     pub fn with_content_type(mut self, ct: impl Into<String>) -> Self {
@@ -83,8 +81,8 @@ impl CacheValue {
     }
 
     pub fn serialize<T: serde::Serialize>(value: &T) -> Result<Self, CacheError> {
-        let data = serde_json::to_vec(value)
-            .map_err(|e| CacheError::SerializationError(e.to_string()))?;
+        let data =
+            serde_json::to_vec(value).map_err(|e| CacheError::SerializationError(e.to_string()))?;
         Ok(Self::new(data))
     }
 }
@@ -103,14 +101,7 @@ pub struct Entry {
 impl Entry {
     pub fn new(key: CacheKey, value: CacheValue) -> Self {
         let now = Utc::now();
-        Self {
-            key,
-            value,
-            ttl: None,
-            expires_at: None,
-            access_count: 0,
-            last_accessed: now,
-        }
+        Self { key, value, ttl: None, expires_at: None, access_count: 0, last_accessed: now }
     }
 
     pub fn with_ttl(mut self, ttl: chrono::Duration) -> Self {
@@ -165,10 +156,8 @@ mod tests {
 
     #[test]
     fn test_entry_expiry() {
-        let mut entry = Entry::new(
-            CacheKey::from("test"),
-            CacheValue::new(vec![]),
-        ).with_ttl(chrono::Duration::hours(1));
+        let mut entry = Entry::new(CacheKey::from("test"), CacheValue::new(vec![]))
+            .with_ttl(chrono::Duration::hours(1));
 
         assert!(!entry.is_expired());
         assert!(entry.remaining_ttl().is_some());
