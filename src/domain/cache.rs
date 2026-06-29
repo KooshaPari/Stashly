@@ -6,7 +6,7 @@ use std::hash::{Hash, Hasher};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use super::errors::CacheError;
+use super::errors::{CacheError, ErrorCode, RecoveryHint};
 
 /// Cache key.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,13 +76,19 @@ impl CacheValue {
     }
 
     pub fn deserialize<T: serde::de::DeserializeOwned>(&self) -> Result<T, CacheError> {
-        serde_json::from_slice(&self.data)
-            .map_err(|e| CacheError::DeserializationError(e.to_string()))
+        serde_json::from_slice(&self.data).map_err(|e| CacheError::DeserializationError {
+            message: e.to_string(),
+            code: ErrorCode::Deserialization,
+            hint: RecoveryHint::CheckFormat,
+        })
     }
 
     pub fn serialize<T: serde::Serialize>(value: &T) -> Result<Self, CacheError> {
-        let data =
-            serde_json::to_vec(value).map_err(|e| CacheError::SerializationError(e.to_string()))?;
+        let data = serde_json::to_vec(value).map_err(|e| CacheError::SerializationError {
+            message: e.to_string(),
+            code: ErrorCode::Serialization,
+            hint: RecoveryHint::CheckFormat,
+        })?;
         Ok(Self::new(data))
     }
 }

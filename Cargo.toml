@@ -41,6 +41,21 @@ hashlink = "0.11"
 [dev-dependencies]
 tokio-test = "0.4"
 tempfile = "3"
+criterion = "0.5"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+complexity = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+style = { level = "deny", priority = -1 }
+module_name_repetitions = "allow"
+similar_names = "allow"
+too_many_lines = "allow"
+expect_used = "allow"
+unwrap_used = "allow"
+print_stdout = "allow"
 
 [profile.release]
 lto = true

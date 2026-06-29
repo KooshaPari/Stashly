@@ -26,7 +26,7 @@ impl CacheService {
                 Ok(Some(result))
             }
             Ok(None) => Ok(None),
-            Err(e) => Err(CacheError::BackendError(e)),
+            Err(e) => Err(e),
         }
     }
 
@@ -37,22 +37,22 @@ impl CacheService {
         value: &T,
     ) -> Result<(), CacheError> {
         let cache_value = CacheValue::serialize(value)?;
-        self.cache.set(key, cache_value).await.map_err(CacheError::BackendError)
+        self.cache.set(key, cache_value).await
     }
 
     /// Remove a key from the cache.
     pub async fn remove(&self, key: &CacheKey) -> Result<(), CacheError> {
-        self.cache.remove(key).await.map_err(CacheError::BackendError)
+        self.cache.remove(key).await
     }
 
     /// Check if a key exists.
     pub async fn contains(&self, key: &CacheKey) -> Result<bool, CacheError> {
-        self.cache.contains(key).await.map_err(CacheError::BackendError)
+        self.cache.contains(key).await
     }
 
     /// Get cache size.
     pub async fn len(&self) -> Result<usize, CacheError> {
-        self.cache.len().await.map_err(CacheError::BackendError)
+        self.cache.len().await
     }
 
     /// Check whether the cache is empty.

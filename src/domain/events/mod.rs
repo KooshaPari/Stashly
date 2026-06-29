@@ -15,20 +15,11 @@ use std::time::SystemTime;
 #[derive(Debug, Clone)]
 pub enum CacheEvent {
     /// Cache hit event
-    CacheHit {
-        key: String,
-        tier: CacheTier,
-        timestamp: SystemTime,
-    },
+    CacheHit { key: String, tier: CacheTier, timestamp: SystemTime },
     /// Cache miss event
     CacheMiss { key: String, timestamp: SystemTime },
     /// Cache entry created
-    CacheEntryCreated {
-        key: String,
-        tier: CacheTier,
-        ttl_secs: u64,
-        timestamp: SystemTime,
-    },
+    CacheEntryCreated { key: String, tier: CacheTier, ttl_secs: u64, timestamp: SystemTime },
     /// Cache entry evicted
     CacheEntryEvicted {
         key: String,
@@ -37,23 +28,11 @@ pub enum CacheEvent {
         timestamp: SystemTime,
     },
     /// Cache entry expired
-    CacheEntryExpired {
-        key: String,
-        tier: CacheTier,
-        timestamp: SystemTime,
-    },
+    CacheEntryExpired { key: String, tier: CacheTier, timestamp: SystemTime },
     /// Cache cleared
-    CacheCleared {
-        tier: Option<CacheTier>,
-        entries_removed: usize,
-        timestamp: SystemTime,
-    },
+    CacheCleared { tier: Option<CacheTier>, entries_removed: usize, timestamp: SystemTime },
     /// Singleflight request started
-    SingleflightStarted {
-        key: String,
-        requester_pid: u32,
-        timestamp: SystemTime,
-    },
+    SingleflightStarted { key: String, requester_pid: u32, timestamp: SystemTime },
     /// Singleflight request completed
     SingleflightCompleted {
         key: String,
@@ -62,12 +41,7 @@ pub enum CacheEvent {
         timestamp: SystemTime,
     },
     /// Singleflight request failed
-    SingleflightFailed {
-        key: String,
-        error: String,
-        waiters: u32,
-        timestamp: SystemTime,
-    },
+    SingleflightFailed { key: String, error: String, waiters: u32, timestamp: SystemTime },
 }
 
 impl CacheEvent {
