@@ -11,22 +11,143 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  ci:
-    name: Rust CI
-    uses: KooshaPari/template-commons/.github/workflows/reusable-rust-ci.yml@main
-    with:
-      rust-version: stable
-      enable-coverage: true
+env:
+  CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN: stable
 
+jobs:
+  # --------------------------------------------------------------------------
+  # Lint & Format
+  # --------------------------------------------------------------------------
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  # --------------------------------------------------------------------------
+  # Build & Test
+  # --------------------------------------------------------------------------
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        continue-on-error: true
+
+      - name: Build
+        run: cargo build --workspace --all-features
+
+      - name: Run unit tests
+        run: cargo test --workspace --all-features
+
+      - name: Generate coverage
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --workspace --out Xml --all-features --avoid-cfg-tarpaulin
+        continue-on-error: true
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          files: ./cobertura.xml
+          fail_ci_if_error: false
+
+  # --------------------------------------------------------------------------
+  # Security Scan
+  # --------------------------------------------------------------------------
   security:
     name: Security Audit
-    uses: KooshaPari/template-commons/.github/workflows/reusable-security-scan.yml@main
-    with:
-      language: rust
-    secrets:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  phenotype-validate:
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy security lints
+        run: cargo clippy --workspace -- -D warnings -W clippy::panic -W clippy::unwrap_used
+        continue-on-error: true
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run cargo-audit
+        run: cargo audit
+        continue-on-error: true
+
+  # --------------------------------------------------------------------------
+  # Governance Validation
+  # --------------------------------------------------------------------------
+  governance:
     name: Governance Validation
-    uses: KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            echo "✅ CHANGELOG.md exists"
+          else
+            echo "⚠️ No CHANGELOG.md found"
+          fi
+
+      - name: Check required governance files
+        run: |
+          for f in LICENSE README.md SECURITY.md CODE_OF_CONDUCT.md CONTRIBUTING.md; do
+            if [ -f "$f" ]; then
+              echo "✅ $f present"
+            else
+              echo "⚠️ $f missing"
+            fi
+          done
+
+      - name: Check for FR annotations on changed test files
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD -- '*_test.rs' 'tests/*.rs' 2>/dev/null || echo "")
+          if [ -n "$CHANGED_FILES" ]; then
+            MISSING=0
+            for file in $CHANGED_FILES; do
+              if [ -f "$file" ] && ! grep -q "FR:" "$file" && ! grep -q "@FR" "$file"; then
+                echo "⚠️ Missing FR annotation: $file"
+                MISSING=$((MISSING + 1))
+              fi
+            done
+            if [ $MISSING -gt 0 ]; then
+              echo "❌ $MISSING test file(s) missing FR annotations"
+              exit 1
+            fi
+          fi
+          echo "✅ All governance checks passed"

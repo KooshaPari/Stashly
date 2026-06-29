@@ -163,4 +163,82 @@ mod tests {
         let result = cache.get(&key).await.unwrap();
         assert!(result.is_none());
     }
+
+    // FR: L7-CONCURRENT-ACCESS — InMemoryCache handles concurrent reads/writes safely
+    #[tokio::test]
+    async fn test_concurrent_read_write() {
+        let cache = std::sync::Arc::new(InMemoryCache::new(1000));
+        let mut handles = Vec::new();
+
+        // Spawn 10 concurrent writers
+        for i in 0..10usize {
+            let c = cache.clone();
+            handles.push(tokio::spawn(async move {
+                let key = CacheKey::from(format!("key-{}", i));
+                let value = CacheValue::serialize(&format!("value-{}", i)).unwrap();
+                c.set(key, value).await.unwrap();
+            }));
+        }
+
+        // Wait for all writers
+        for h in handles {
+            h.await.unwrap();
+        }
+
+        // Spawn 10 concurrent readers
+        let mut read_handles = Vec::new();
+        for i in 0..10usize {
+            let c = cache.clone();
+            read_handles.push(tokio::spawn(async move {
+                let key = CacheKey::from(format!("key-{}", i));
+                let result = c.get(&key).await.unwrap();
+                assert!(result.is_some(), "key-{} should exist after concurrent write", i);
+                let val: String = result.unwrap().deserialize().unwrap();
+                assert_eq!(val, format!("value-{}", i));
+            }));
+        }
+
+        for h in read_handles {
+            h.await.unwrap();
+        }
+    }
+
+    // FR: L7-CONCURRENT-MIXED — InMemoryCache handles mixed get/set/remove concurrently
+    #[tokio::test]
+    async fn test_concurrent_mixed_operations() {
+        let cache = std::sync::Arc::new(InMemoryCache::new(100));
+        let mut handles = Vec::new();
+
+        // Pre-populate
+        for i in 0..5usize {
+            let key = CacheKey::from(format!("mix-{}", i));
+            let value = CacheValue::serialize(&i).unwrap();
+            cache.set(key, value).await.unwrap();
+        }
+
+        // Mix of concurrent reads, writes, and removes
+        for i in 0..20usize {
+            let c = cache.clone();
+            handles.push(tokio::spawn(async move {
+                let idx = i % 5;
+                let key = CacheKey::from(format!("mix-{}", idx));
+                match i % 3 {
+                    0 => { let _ = c.get(&key).await; }
+                    1 => {
+                        let value = CacheValue::serialize(&i).unwrap();
+                        let _ = c.set(key, value).await;
+                    }
+                    _ => { let _ = c.remove(&key).await; }
+                }
+            }));
+        }
+
+        for h in handles {
+            h.await.unwrap();
+        }
+
+        // Verify no panics or deadlocks occurred
+        let len = cache.len().await.unwrap();
+        assert!(len <= 100);
+    }
 }

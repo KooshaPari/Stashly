@@ -5,8 +5,8 @@
 //! ## Usage
 //!
 //! ```rust
-//! use thegent_cache::adapters::inmemory::TieredCache;
-//! use thegent_cache::ports::driven::{CachePort, CacheWritePort};
+//! use stashly::adapters::tiered::TieredCache;
+//! use stashly::ports::driven::{CachePort, CacheWritePort};
 //!
 //! let mut cache = TieredCache::default();
 //! cache.set("key".into(), "value".into()).unwrap();
@@ -316,5 +316,129 @@ mod tests {
         let removed = cache.cleanup();
         assert!(removed >= 1);
         assert_eq!(cache.get(&"ttl-clean".into()), None);
+    }
+
+    // FR: L7-TIERED-CONCURRENT-READS — TieredCache handles concurrent reads safely
+    #[test]
+    fn test_concurrent_reads() {
+        let mut cache = TieredCache::default();
+        // Pre-populate with data
+        for i in 0..100usize {
+            cache
+                .set(format!("read-{}", i).into(), format!("val-{}", i).into())
+                .unwrap();
+        }
+
+        let cache = std::sync::Arc::new(std::sync::Mutex::new(cache));
+        let mut handles = Vec::new();
+
+        // 20 concurrent readers
+        for _ in 0..20usize {
+            let c = cache.clone();
+            handles.push(thread::spawn(move || {
+                let cache = c.lock().unwrap();
+                for j in 0..100usize {
+                    let key = format!("read-{}", j);
+                    if let Some(val) = cache.get(&key.into()) {
+                        assert_eq!(val, format!("val-{}", j).into());
+                    }
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("reader thread panicked");
+        }
+    }
+
+    // FR: L7-TIERED-CONCURRENT-WRITES — TieredCache handles concurrent writes safely
+    #[test]
+    fn test_concurrent_writes_different_keys() {
+        let cache = std::sync::Arc::new(std::sync::Mutex::new(TieredCache::default()));
+        let mut handles = Vec::new();
+
+        // 10 concurrent writers to different keys
+        for i in 0..10usize {
+            let c = cache.clone();
+            handles.push(thread::spawn(move || {
+                let mut cache = c.lock().unwrap();
+                for j in 0..20usize {
+                    let key = format!("write-{}-{}", i, j);
+                    let value = format!("val-{}-{}", i, j);
+                    cache.set(key.into(), value.into()).unwrap();
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("writer thread panicked");
+        }
+
+        // Verify all keys were written
+        let cache = cache.lock().unwrap();
+        for i in 0..10usize {
+            for j in 0..20usize {
+                let key = format!("write-{}-{}", i, j);
+                assert!(
+                    cache.get(&key.clone().into()).is_some(),
+                    "key {} should exist after concurrent writes",
+                    key
+                );
+            }
+        }
+    }
+
+    // FR: L7-TIERED-CONCURRENT-MIXED — TieredCache handles mixed operations under contention
+    #[test]
+    fn test_concurrent_mixed_operations() {
+        let cache = std::sync::Arc::new(std::sync::Mutex::new(TieredCache::default()));
+        let mut handles = Vec::new();
+
+        // Pre-populate
+        {
+            let mut c = cache.lock().unwrap();
+            for i in 0..50usize {
+                c.set(format!("mix-{}", i).into(), format!("init-{}", i).into())
+                    .unwrap();
+            }
+        }
+
+        // 8 threads doing mixed operations
+        for i in 0..8usize {
+            let c = cache.clone();
+            handles.push(thread::spawn(move || {
+                for j in 0..50usize {
+                    let idx = (j + i * 7) % 50;
+                    let key = format!("mix-{}", idx);
+                    match j % 3 {
+                        0 => {
+                            // Read
+                            let cache = c.lock().unwrap();
+                            let _ = cache.get(&key.into());
+                        }
+                        1 => {
+                            // Write
+                            let mut cache = c.lock().unwrap();
+                            let _ = cache.set(key.into(), format!("thread-{}", i).into());
+                        }
+                        _ => {
+                            // Remove
+                            let mut cache = c.lock().unwrap();
+                            let _ = cache.remove(&key.into());
+                        }
+                    }
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("mixed thread panicked");
+        }
+
+        // Verify no lock corruption — clean up should still work
+        let cache = cache.lock().unwrap();
+        let removed = cache.cleanup();
+        // Should not panic — cleanup iterates all tiers
+        assert!(removed <= 400);
     }
 }

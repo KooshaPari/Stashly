@@ -33,7 +33,7 @@ pub mod ports;
 pub use adapters::memory::InMemoryCache;
 pub use adapters::tiered::TieredCache;
 pub use domain::entities::{CacheEntry, SingleflightRequest};
-pub use domain::errors::CacheError;
+pub use domain::errors::{CacheError, ErrorEnvelope, ErrorSeverity};
 pub use domain::events::CacheEvent;
 pub use domain::value_objects::{CacheStats, CacheTier, Ttl};
 pub use domain::{Cache, CacheKey, CacheValue, Entry};
