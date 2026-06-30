@@ -7,6 +7,8 @@ use async_trait::async_trait;
 use chrono::Duration;
 use lru::LruCache;
 
+use tracing::{debug, instrument};
+
 use crate::domain::{
     policy::{EvictionPolicy, LruPolicy},
     Cache, CacheKey, CacheValue, Entry,
@@ -38,12 +40,14 @@ impl InMemoryCache {
 
 #[async_trait]
 impl Cache for InMemoryCache {
+    #[instrument(skip(self), fields(key = %key))]
     async fn get(&self, key: &CacheKey) -> Result<Option<CacheValue>, String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
         let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
         if let Some(entry) = cache.get_mut(key) {
             if entry.is_expired() {
+                debug!(key = %key, "cache miss — entry expired, evicting");
                 cache.pop(key);
                 policy.remove(key.as_str());
                 return Ok(None);
@@ -51,19 +55,23 @@ impl Cache for InMemoryCache {
 
             entry.touch();
             policy.record_access(key.as_str());
+            debug!(key = %key, "cache hit");
             Ok(Some(entry.value.clone()))
         } else {
+            debug!(key = %key, "cache miss");
             Ok(None)
         }
     }
 
+    #[instrument(skip(self, value), fields(key = %key))]
     async fn set(&self, key: CacheKey, value: CacheValue) -> Result<(), String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
         let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
-        // Evict if necessary
+        // Evict if necessary to stay within capacity.
         while cache.len() >= self.max_capacity {
             if let Some(evict_key) = policy.select_eviction() {
+                debug!(evict_key = %evict_key, "evicting LRU entry to make room");
                 let eviction_key = CacheKey::from(evict_key.clone());
                 cache.pop(&eviction_key);
                 policy.remove(evict_key.as_str());
@@ -75,16 +83,19 @@ impl Cache for InMemoryCache {
         let entry = Entry::new(key.clone(), value);
         cache.push(key.clone(), entry);
         policy.record_access(key.as_str());
+        debug!(key = %key, "cache set");
 
         Ok(())
     }
 
+    #[instrument(skip(self), fields(key = %key))]
     async fn remove(&self, key: &CacheKey) -> Result<(), String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
         let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
         cache.pop(key);
         policy.remove(key.as_str());
+        debug!(key = %key, "cache remove");
 
         Ok(())
     }
@@ -94,12 +105,15 @@ impl Cache for InMemoryCache {
         Ok(cache.contains(key))
     }
 
+    #[instrument(skip(self))]
     async fn clear(&self) -> Result<(), String> {
         let mut cache = self.cache.write().map_err(|e| e.to_string())?;
         let mut policy = self.policy.write().map_err(|e| e.to_string())?;
 
+        let prev_len = cache.len();
         cache.clear();
         policy.clear();
+        debug!(entries_removed = prev_len, "cache cleared");
 
         Ok(())
     }
