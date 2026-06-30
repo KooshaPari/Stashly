@@ -32,12 +32,13 @@ pub mod ports;
 // Re-exports (original Stashly)
 pub use adapters::memory::InMemoryCache;
 pub use adapters::tiered::TieredCache;
+pub use application::services::CacheService;
 pub use domain::entities::{CacheEntry, SingleflightRequest};
 pub use domain::errors::CacheError;
 pub use domain::events::CacheEvent;
 pub use domain::value_objects::{CacheStats, CacheTier, Ttl};
 pub use domain::{Cache, CacheKey, CacheValue, Entry};
-pub use infrastructure::error::CacheKitError;
+pub use infrastructure::error::{CacheKitError, ErrorCode, ErrorEnvelope, ErrorSeverity};
 // Re-exports (from thegent-cache)
 pub use ports::driven::{CachePort, CacheWritePort, EvictionPort, SingleflightPort, StatsPort};
 

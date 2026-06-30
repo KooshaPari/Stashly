@@ -5,8 +5,8 @@
 //! ## Usage
 //!
 //! ```rust
-//! use thegent_cache::adapters::inmemory::TieredCache;
-//! use thegent_cache::ports::driven::{CachePort, CacheWritePort};
+//! # use stashly::TieredCache;
+//! # use stashly::{CachePort, CacheWritePort};
 //!
 //! let mut cache = TieredCache::default();
 //! cache.set("key".into(), "value".into()).unwrap();
@@ -46,9 +46,7 @@ impl TieredCache {
     /// Create a cache with custom configuration.
     pub fn with_config(l1_max_size: usize, _l2_max_size: usize, default_ttl: Ttl) -> Self {
         Self {
-            l1: Mutex::new(LruCache::new(
-                std::num::NonZeroUsize::new(l1_max_size).unwrap(),
-            )),
+            l1: Mutex::new(LruCache::new(std::num::NonZeroUsize::new(l1_max_size).unwrap())),
             l2: DashMap::new(),
             stats: Mutex::new(CacheStats::new()),
             events: Mutex::new(Vec::new()),
@@ -143,8 +141,7 @@ impl CachePort for TieredCache {
     }
 
     fn get_entry(&self, key: &CacheKey) -> Option<CacheEntry> {
-        self.get_internal(key)
-            .map(|(value, _tier)| CacheEntry::new(key.clone(), value))
+        self.get_internal(key).map(|(value, _tier)| CacheEntry::new(key.clone(), value))
     }
 }
 
