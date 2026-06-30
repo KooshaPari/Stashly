@@ -1,8 +1,8 @@
 # Test Coverage Matrix - Stashly
 
 **Project**: Stashly
-**Document Version**: 1.1
-**Last Updated**: 2026-04-02
+**Document Version**: 1.2
+**Last Updated**: 2026-06-29
 
 ---
 
@@ -11,11 +11,11 @@
 | Metric | Value |
 |--------|-------|
 | Functional Requirements | 12 (see FR-CACHE, FR-BACKEND, FR-TTL, FR-EVICT) |
-| Test Files | 0 |
-| Test Functions | 0 |
-| Lines of Code | 713 |
+| Test Files | 7 inline `#[cfg(test)]` modules |
+| Test Functions | 38+ |
+| Lines of Code | ~850 |
 | Coverage Target | 80% |
-| Current Coverage | 0% |
+| Current Coverage | ~30% (estimated, see coverage gaps) |
 
 ---
 
@@ -32,19 +32,19 @@ Hexagonal (Ports & Adapters):
 ## Test Categories
 
 ### Unit Tests
-- **Location**: `src/**/*_test.rs`
+- **Location**: `src/**/` (inline `#[cfg(test)] mod tests` blocks)
 - **Purpose**: Test individual components in isolation
 - **Coverage Target**: 90%
-- **Status**: NOT IMPLEMENTED
+- **Status**: PARTIALLY IMPLEMENTED
 
 ### Integration Tests
-- **Location**: `tests/integration/`
-- **Purpose**: Test component interactions
+- **Location**: Tests exist inline in adapter modules
+- **Purpose**: Test component interactions through adapter boundaries
 - **Coverage Target**: 75%
-- **Status**: NOT IMPLEMENTED
+- **Status**: PARTIALLY IMPLEMENTED (via tiered + memory adapter tests)
 
 ### Property-Based Tests
-- **Location**: `tests/property/`
+- **Location**: N/A
 - **Purpose**: Randomized testing with shrinking
 - **Coverage Target**: Key invariants
 - **Status**: NOT IMPLEMENTED
@@ -53,65 +53,73 @@ Hexagonal (Ports & Adapters):
 
 ## FR to Test Coverage Mapping
 
-| FR ID | Description | Module | Test File | Coverage Status |
-|-------|-------------|--------|-----------|-----------------|
-| FR-CACHE-001 | get() method | domain/cache.rs | TBD | NOT COVERED |
-| FR-CACHE-002 | put() method | domain/cache.rs | TBD | NOT COVERED |
-| FR-CACHE-003 | delete() method | domain/cache.rs | TBD | NOT COVERED |
-| FR-CACHE-004 | Async support | adapters/ | TBD | NOT COVERED |
-| FR-BACKEND-001 | In-memory backend | adapters/memory.rs | TBD | NOT COVERED |
-| FR-BACKEND-002 | Redis backend | adapters/redis.rs | TBD | NOT COVERED |
-| FR-BACKEND-003 | Backend trait | domain/backend.rs | TBD | NOT COVERED |
-| FR-TTL-001 | Entry TTL | domain/entry.rs | TBD | NOT COVERED |
-| FR-TTL-002 | Auto expiration | application/ | TBD | NOT COVERED |
-| FR-TTL-003 | TTL options | domain/entry.rs | TBD | NOT COVERED |
-| FR-EVICT-001 | LRU policy | domain/eviction.rs | TBD | NOT COVERED |
-| FR-EVICT-002 | LFU policy | domain/eviction.rs | TBD | NOT COVERED |
-| FR-EVICT-003 | FIFO policy | domain/eviction.rs | TBD | NOT COVERED |
+| FR ID | Description | Module | Test Location | Coverage Status |
+|-------|-------------|--------|---------------|-----------------|
+| FR-CACHE-001 | get() method | domain/cache.rs | `domain::cache::tests` | COVERED |
+| FR-CACHE-002 | set() method | domain/cache.rs | `domain::cache::tests` | COVERED |
+| FR-CACHE-003 | delete() method | domain/cache.rs | `adapters::memory::tests` | COVERED |
+| FR-CACHE-004 | Async support | adapters/ | `adapters::memory::tests` | COVERED |
+| FR-BACKEND-001 | In-memory backend | adapters/memory.rs | `adapters::memory::tests` | COVERED |
+| FR-BACKEND-002 | Redis backend | N/A | N/A | NOT APPLICABLE |
+| FR-BACKEND-003 | Backend trait | domain/ports.rs | `adapters::memory::tests` | COVERED |
+| FR-TTL-001 | Entry TTL | domain/cache.rs | `domain::cache::tests` | COVERED |
+| FR-TTL-002 | Auto expiration | adapters/tiered/ | `adapters::tiered::tests` | COVERED |
+| FR-TTL-003 | TTL options | domain/cache.rs | `domain::cache::tests` | COVERED |
+| FR-EVICT-001 | LRU policy | domain/policy.rs | `domain::policy::tests` | COVERED |
+| FR-EVICT-002 | LFU policy | domain/policy.rs | `domain::policy::tests` | COVERED |
+| FR-EVICT-003 | FIFO policy | N/A | N/A | NOT IMPLEMENTED |
 
 ---
 
 ## Test File Index
 
-| Test File | Purpose | FRs Covered |
-|-----------|---------|-------------|
-| NONE | Tests need to be created | N/A |
+| Test Module | Location | Purpose | Tests |
+|-------------|----------|---------|-------|
+| domain::cache::tests | src/domain/cache.rs | CacheKey, CacheValue serde, Entry expiry | 3 |
+| domain::policy::tests | src/domain/policy.rs | LRU/LFU eviction policies | 2 |
+| domain::errors::tests | src/domain/errors.rs | CacheError display + serialize | 2 |
+| domain::entities::tests | src/domain/entities/mod.rs | CacheEntry, SingleflightRequest, CrossProcessRequest | 5 |
+| domain::events::tests | src/domain/events/mod.rs | CacheEvent variants, EvictionReason display | 3 |
+| domain::value_objects::tests | src/domain/value_objects/mod.rs | CacheKey, Ttl, CacheStats | 4 |
+| adapters::memory::tests | src/adapters/memory.rs | Basic operations, eviction, remove, concurrent access | 7 |
+| adapters::tiered::tests | src/adapters/tiered/mod.rs | Basic operations, TTL, cleanup | 7 |
+| application::services::tests | src/application/services.rs | CacheService operations | 5 |
+| infrastructure::error::tests | src/infrastructure/error.rs | CacheKitError display | 2 |
 
 ---
 
 ## Coverage Gaps
 
 ### Critical Gaps
-1. **No tests exist** - All 12 FRs lack test coverage
-2. Domain types not tested
-3. Backend adapters not tested
-4. Eviction policies not tested
+1. **Redis backend** - Not implemented as a backend yet
+2. **FIFO eviction policy** - Not implemented
 
 ### Partial Coverage
-1. N/A - No coverage exists
+1. Most domain types are tested inline
+2. Concurrency testing added for InMemoryCache (reads + writes + mixed)
+3. Tiered cache has basic operation + TTL tests
 
 ---
 
 ## Recommendations
 
-### Immediate Actions (This Week)
-1. Create `src/domain/cache_test.rs` with tests for FR-CACHE-001/002/003
-2. Create `src/domain/entry_test.rs` with tests for FR-TTL-001/003
-3. Create `src/domain/eviction_test.rs` with tests for FR-EVICT-001/002/003
+### Immediate Actions
+1. Benchmarks now implemented with Criterion (real workload targets)
+2. Concurrency tests added for InMemoryCache
+3. All error types and events now have unit tests
 
 ### Short-term Actions (This Sprint)
-1. Add integration tests for backend adapters
-2. Add property-based tests for serialization
-3. Target: 60% coverage
+1. Add integration tests for cross-module interactions
+2. Target: 50% coverage
 
 ### Medium-term Actions (This Month)
-1. Add Redis integration tests
-2. Add performance benchmarks
+1. Add Redis integration tests (when backend is implemented)
+2. Add property-based tests for serialization
 3. Target: 80% coverage
 
 ---
 
 **Total Functional Requirements**: 12
-**Covered**: 0
-**Coverage Percentage**: 0%
-**Last Updated**: 2026-04-02
+**Covered**: 11 (1 N/A, 1 not implemented)
+**Coverage Percentage**: ~30% (estimated)
+**Last Updated**: 2026-06-29

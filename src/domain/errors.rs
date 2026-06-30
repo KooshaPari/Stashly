@@ -29,3 +29,35 @@ impl serde::Serialize for CacheError {
         serializer.serialize_str(&self.to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cache_error_display() {
+        let err = CacheError::KeyNotFound("mykey".to_string());
+        assert_eq!(err.to_string(), "Key not found: mykey");
+
+        let err = CacheError::SerializationError("bad format".to_string());
+        assert_eq!(err.to_string(), "Serialization error: bad format");
+
+        let err = CacheError::DeserializationError("bad bytes".to_string());
+        assert_eq!(err.to_string(), "Deserialization error: bad bytes");
+
+        assert_eq!(CacheError::CacheFull.to_string(), "Cache full");
+
+        let err = CacheError::BackendError("connection failed".to_string());
+        assert_eq!(err.to_string(), "Backend error: connection failed");
+
+        let err = CacheError::IoError("disk full".to_string());
+        assert_eq!(err.to_string(), "IO error: disk full");
+    }
+
+    #[test]
+    fn test_cache_error_serialize() {
+        let err = CacheError::KeyNotFound("k".to_string());
+        let json = serde_json::to_string(&err).unwrap();
+        assert!(json.contains("Key not found"));
+    }
+}
