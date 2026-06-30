@@ -20,3 +20,32 @@ impl fmt::Display for CacheKitError {
 }
 
 impl std::error::Error for CacheKitError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cache_kit_error_display() {
+        let err = CacheKitError::Config("missing host".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Configuration error: missing host"
+        );
+
+        let err = CacheKitError::Init("connection failed".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Initialization error: connection failed"
+        );
+
+        let err = CacheKitError::Runtime("out of memory".to_string());
+        assert_eq!(err.to_string(), "Runtime error: out of memory");
+    }
+
+    #[test]
+    fn test_cache_kit_error_is_std_error() {
+        fn assert_implements_error<T: std::error::Error>() {}
+        assert_implements_error::<CacheKitError>();
+    }
+}
