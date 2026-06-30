@@ -5,8 +5,8 @@
 //! ## Usage
 //!
 //! ```rust
-//! use thegent_cache::adapters::inmemory::TieredCache;
-//! use thegent_cache::ports::driven::{CachePort, CacheWritePort};
+//! use stashly::TieredCache;
+//! use stashly::ports::driven::{CachePort, CacheWritePort};
 //!
 //! let mut cache = TieredCache::default();
 //! cache.set("key".into(), "value".into()).unwrap();
