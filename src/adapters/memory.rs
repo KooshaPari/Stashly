@@ -177,4 +177,115 @@ mod tests {
         let result = cache.get(&key).await.unwrap();
         assert!(result.is_none());
     }
+
+    #[tokio::test]
+    async fn test_concurrent_reads() {
+        let cache = Arc::new(InMemoryCache::new(1000));
+        let mut handles = Vec::new();
+
+        // Populate cache
+        for i in 0..100 {
+            let key = CacheKey::from(format!("key{}", i));
+            let value = CacheValue::serialize(&i).unwrap();
+            cache.set(key, value).await.unwrap();
+        }
+
+        // Spawn 10 concurrent readers
+        for _ in 0..10 {
+            let cache = cache.clone();
+            handles.push(tokio::spawn(async move {
+                for i in 0..100 {
+                    let key = CacheKey::from(format!("key{}", i));
+                    let result = cache.get(&key).await.unwrap();
+                    assert!(result.is_some(), "key{} should exist", i);
+                }
+            }));
+        }
+
+        for h in handles {
+            h.await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn test_concurrent_writes() {
+        let cache = Arc::new(InMemoryCache::new(1000));
+        let mut handles = Vec::new();
+
+        // Spawn 20 concurrent writers
+        for i in 0..20 {
+            let cache = cache.clone();
+            handles.push(tokio::spawn(async move {
+                for j in 0..50 {
+                    let key = CacheKey::from(format!("writer{}-{}", i, j));
+                    let value = CacheValue::serialize(&j).unwrap();
+                    cache.set(key, value).await.unwrap();
+                }
+            }));
+        }
+
+        for h in handles {
+            h.await.unwrap();
+        }
+
+        assert!(cache.len().await.unwrap() > 0);
+
+        // Verify written values
+        for i in 0..20 {
+            for j in (0..50).step_by(10) {
+                let key = CacheKey::from(format!("writer{}-{}", i, j));
+                let result = cache.get(&key).await.unwrap();
+                assert!(result.is_some(), "writer{}-{} should exist", i, j);
+                let value: i32 = result.unwrap().deserialize().unwrap();
+                assert_eq!(value, j);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_concurrent_read_write_mixed() {
+        let cache = Arc::new(InMemoryCache::new(500));
+        let mut handles = Vec::new();
+
+        // Seed some data
+        for i in 0..200 {
+            let key = CacheKey::from(format!("seed{}", i));
+            let value = CacheValue::serialize(&i).unwrap();
+            cache.set(key, value).await.unwrap();
+        }
+
+        // Readers
+        let cache_r = cache.clone();
+        handles.push(tokio::spawn(async move {
+            for i in 0..200 {
+                let key = CacheKey::from(format!("seed{}", i));
+                let result = cache_r.get(&key).await.unwrap();
+                assert!(result.is_some());
+            }
+        }));
+
+        // Writers
+        let cache_w = cache.clone();
+        handles.push(tokio::spawn(async move {
+            for i in 0..100 {
+                let key = CacheKey::from(format!("mixed{}", i));
+                let value = CacheValue::serialize(&i).unwrap();
+                cache_w.set(key, value).await.unwrap();
+            }
+        }));
+
+        // Remover
+        let cache_d = cache.clone();
+        handles.push(tokio::spawn(async move {
+            // Remove even-numbered seeds
+            for i in (0..200).step_by(2) {
+                let key = CacheKey::from(format!("seed{}", i));
+                let _ = cache_d.remove(&key).await;
+            }
+        }));
+
+        for h in handles {
+            h.await.unwrap();
+        }
+    }
 }

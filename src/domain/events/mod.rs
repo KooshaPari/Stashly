@@ -127,3 +127,97 @@ impl fmt::Display for EvictionReason {
 }
 
 use std::fmt;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_eviction_reason_display() {
+        assert_eq!(EvictionReason::Manual.to_string(), "manual");
+        assert_eq!(EvictionReason::Expired.to_string(), "expired");
+        assert_eq!(EvictionReason::Capacity.to_string(), "capacity");
+        assert_eq!(EvictionReason::Replaced.to_string(), "replaced");
+    }
+
+    #[test]
+    fn test_cache_event_timestamp() {
+        let now = std::time::SystemTime::now();
+        let event = CacheEvent::CacheHit {
+            key: "k".to_string(),
+            tier: CacheTier::L1,
+            timestamp: now,
+        };
+        assert_eq!(event.timestamp(), now);
+        assert_eq!(event.key(), Some("k"));
+    }
+
+    #[test]
+    fn test_cache_event_key_method() {
+        let now = std::time::SystemTime::now();
+        assert_eq!(
+            CacheEvent::CacheMiss { key: "miss".to_string(), timestamp: now }.key(),
+            Some("miss")
+        );
+        assert_eq!(
+            CacheEvent::CacheCleared {
+                tier: None,
+                entries_removed: 5,
+                timestamp: now,
+            }
+            .key(),
+            None
+        );
+    }
+
+    #[test]
+    fn test_cache_event_variants() {
+        let now = std::time::SystemTime::now();
+
+        let evicted = CacheEvent::CacheEntryEvicted {
+            key: "k".to_string(),
+            tier: CacheTier::L1,
+            reason: EvictionReason::Capacity,
+            timestamp: now,
+        };
+        assert_eq!(evicted.key(), Some("k"));
+
+        let expired = CacheEvent::CacheEntryExpired {
+            key: "e".to_string(),
+            tier: CacheTier::L2,
+            timestamp: now,
+        };
+        assert_eq!(expired.key(), Some("e"));
+
+        let sf_started = CacheEvent::SingleflightStarted {
+            key: "sf".to_string(),
+            requester_pid: 100,
+            timestamp: now,
+        };
+        assert_eq!(sf_started.key(), Some("sf"));
+
+        let sf_completed = CacheEvent::SingleflightCompleted {
+            key: "sf".to_string(),
+            result_waiters: 3,
+            duration_ms: 42,
+            timestamp: now,
+        };
+        assert_eq!(sf_completed.key(), Some("sf"));
+
+        let sf_failed = CacheEvent::SingleflightFailed {
+            key: "sf".to_string(),
+            error: "timeout".to_string(),
+            waiters: 2,
+            timestamp: now,
+        };
+        assert_eq!(sf_failed.key(), Some("sf"));
+
+        let created = CacheEvent::CacheEntryCreated {
+            key: "new".to_string(),
+            tier: CacheTier::L1,
+            ttl_secs: 60,
+            timestamp: now,
+        };
+        assert_eq!(created.key(), Some("new"));
+    }
+}
