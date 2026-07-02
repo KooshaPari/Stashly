@@ -27,6 +27,9 @@ jobs:
     secrets:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  phenotype-validate:
+  trace-gate:
+    name: FR Coverage Gate
+    uses: KooshaPari/phenotype-pm-core/.github/workflows/trace-gate.yml@main1
     name: Governance Validation
     uses: KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@main
+
