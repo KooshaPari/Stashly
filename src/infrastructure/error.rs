@@ -28,16 +28,10 @@ mod tests {
     #[test]
     fn test_cache_kit_error_display() {
         let err = CacheKitError::Config("missing host".to_string());
-        assert_eq!(
-            err.to_string(),
-            "Configuration error: missing host"
-        );
+        assert_eq!(err.to_string(), "Configuration error: missing host");
 
         let err = CacheKitError::Init("connection failed".to_string());
-        assert_eq!(
-            err.to_string(),
-            "Initialization error: connection failed"
-        );
+        assert_eq!(err.to_string(), "Initialization error: connection failed");
 
         let err = CacheKitError::Runtime("out of memory".to_string());
         assert_eq!(err.to_string(), "Runtime error: out of memory");
