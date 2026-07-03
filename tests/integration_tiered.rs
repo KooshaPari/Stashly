@@ -68,7 +68,7 @@ fn stats_track_hits_and_misses() {
     let mut cache = TieredCache::new();
     cache.set("s".into(), "v".into()).unwrap();
 
-    cache.get(&"s".into());       // hit
+    cache.get(&"s".into()); // hit
     cache.get(&"absent".into()); // miss
 
     let stats = cache.get_stats();

@@ -298,12 +298,7 @@ pub struct CacheConfig {
 
 impl CacheConfig {
     pub fn new(l1_max_size: usize, l2_max_size: usize, default_ttl: Ttl) -> Self {
-        Self {
-            l1_max_size,
-            l2_max_size,
-            default_ttl,
-            cleanup_interval: Duration::from_secs(60),
-        }
+        Self { l1_max_size, l2_max_size, default_ttl, cleanup_interval: Duration::from_secs(60) }
     }
 
     pub fn with_cleanup_interval(mut self, interval: Duration) -> Self {

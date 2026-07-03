@@ -13,10 +13,11 @@
 //! assert_eq!(cache.get(&"key".into()), Some("value".into()));
 //! ```
 
+use std::time::Instant;
+
 use dashmap::DashMap;
 use lru::LruCache;
 use parking_lot::Mutex;
-use std::time::Instant;
 
 use crate::domain::entities::CacheEntry;
 use crate::domain::events::CacheEvent;
@@ -46,9 +47,7 @@ impl TieredCache {
     /// Create a cache with custom configuration.
     pub fn with_config(l1_max_size: usize, _l2_max_size: usize, default_ttl: Ttl) -> Self {
         Self {
-            l1: Mutex::new(LruCache::new(
-                std::num::NonZeroUsize::new(l1_max_size).unwrap(),
-            )),
+            l1: Mutex::new(LruCache::new(std::num::NonZeroUsize::new(l1_max_size).unwrap())),
             l2: DashMap::new(),
             stats: Mutex::new(CacheStats::new()),
             events: Mutex::new(Vec::new()),
@@ -143,8 +142,7 @@ impl CachePort for TieredCache {
     }
 
     fn get_entry(&self, key: &CacheKey) -> Option<CacheEntry> {
-        self.get_internal(key)
-            .map(|(value, _tier)| CacheEntry::new(key.clone(), value))
+        self.get_internal(key).map(|(value, _tier)| CacheEntry::new(key.clone(), value))
     }
 }
 
@@ -235,11 +233,12 @@ impl EventPort for TieredCache {
 
 #[cfg(test)]
 mod tests {
+    use std::thread;
+    use std::time::Duration;
+
     use super::*;
     use crate::domain::value_objects::Ttl;
     use crate::ports::driven::CacheWritePort;
-    use std::thread;
-    use std::time::Duration;
 
     #[test]
     fn test_basic_cache_operations() {

@@ -8,27 +8,19 @@
 //! - Append-only log
 //! - Reconstruct state by replaying events
 
-use super::value_objects::CacheTier;
 use std::time::SystemTime;
+
+use super::value_objects::CacheTier;
 
 /// Domain events for the cache bounded context
 #[derive(Debug, Clone)]
 pub enum CacheEvent {
     /// Cache hit event
-    CacheHit {
-        key: String,
-        tier: CacheTier,
-        timestamp: SystemTime,
-    },
+    CacheHit { key: String, tier: CacheTier, timestamp: SystemTime },
     /// Cache miss event
     CacheMiss { key: String, timestamp: SystemTime },
     /// Cache entry created
-    CacheEntryCreated {
-        key: String,
-        tier: CacheTier,
-        ttl_secs: u64,
-        timestamp: SystemTime,
-    },
+    CacheEntryCreated { key: String, tier: CacheTier, ttl_secs: u64, timestamp: SystemTime },
     /// Cache entry evicted
     CacheEntryEvicted {
         key: String,
@@ -37,23 +29,11 @@ pub enum CacheEvent {
         timestamp: SystemTime,
     },
     /// Cache entry expired
-    CacheEntryExpired {
-        key: String,
-        tier: CacheTier,
-        timestamp: SystemTime,
-    },
+    CacheEntryExpired { key: String, tier: CacheTier, timestamp: SystemTime },
     /// Cache cleared
-    CacheCleared {
-        tier: Option<CacheTier>,
-        entries_removed: usize,
-        timestamp: SystemTime,
-    },
+    CacheCleared { tier: Option<CacheTier>, entries_removed: usize, timestamp: SystemTime },
     /// Singleflight request started
-    SingleflightStarted {
-        key: String,
-        requester_pid: u32,
-        timestamp: SystemTime,
-    },
+    SingleflightStarted { key: String, requester_pid: u32, timestamp: SystemTime },
     /// Singleflight request completed
     SingleflightCompleted {
         key: String,
@@ -62,12 +42,7 @@ pub enum CacheEvent {
         timestamp: SystemTime,
     },
     /// Singleflight request failed
-    SingleflightFailed {
-        key: String,
-        error: String,
-        waiters: u32,
-        timestamp: SystemTime,
-    },
+    SingleflightFailed { key: String, error: String, waiters: u32, timestamp: SystemTime },
 }
 
 impl CacheEvent {
@@ -143,11 +118,8 @@ mod tests {
     #[test]
     fn test_cache_event_timestamp() {
         let now = std::time::SystemTime::now();
-        let event = CacheEvent::CacheHit {
-            key: "k".to_string(),
-            tier: CacheTier::L1,
-            timestamp: now,
-        };
+        let event =
+            CacheEvent::CacheHit { key: "k".to_string(), tier: CacheTier::L1, timestamp: now };
         assert_eq!(event.timestamp(), now);
         assert_eq!(event.key(), Some("k"));
     }
@@ -160,12 +132,7 @@ mod tests {
             Some("miss")
         );
         assert_eq!(
-            CacheEvent::CacheCleared {
-                tier: None,
-                entries_removed: 5,
-                timestamp: now,
-            }
-            .key(),
+            CacheEvent::CacheCleared { tier: None, entries_removed: 5, timestamp: now }.key(),
             None
         );
     }

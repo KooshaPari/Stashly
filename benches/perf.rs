@@ -1,11 +1,11 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use stashly::domain::value_objects::{CacheKey as VoKey, CacheValue as VoVal};
+use stashly::ports::driven::{CachePort, CacheWritePort};
+use stashly::TieredCache;
 use stashly::{
     domain::{Cache, CacheKey, CacheValue},
     InMemoryCache,
 };
-use stashly::ports::driven::{CachePort, CacheWritePort};
-use stashly::domain::value_objects::{CacheKey as VoKey, CacheValue as VoVal};
-use stashly::TieredCache;
 
 // ── InMemoryCache benchmarks ─────────────────────────────────────────────────
 
@@ -118,10 +118,5 @@ criterion_group!(
     bench_inmemory_get_miss,
     bench_inmemory_evict,
 );
-criterion_group!(
-    tiered_benches,
-    bench_tiered_set,
-    bench_tiered_get_hit,
-    bench_tiered_get_miss,
-);
+criterion_group!(tiered_benches, bench_tiered_set, bench_tiered_get_hit, bench_tiered_get_miss,);
 criterion_main!(inmemory_benches, tiered_benches);

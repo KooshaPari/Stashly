@@ -8,8 +8,9 @@
 //! - Equality based on identity, not attributes
 //! - Mutable state managed through domain methods
 
-use super::value_objects::{CacheKey, CacheTier, CacheValue, Ttl};
 use std::time::{Duration, Instant};
+
+use super::value_objects::{CacheKey, CacheTier, CacheValue, Ttl};
 
 /// Cache entry entity
 ///
@@ -113,13 +114,7 @@ pub struct SingleflightRequest<T> {
 impl<T> SingleflightRequest<T> {
     /// Create a new singleflight request.
     pub fn new(key: impl Into<String>) -> Self {
-        Self {
-            key: key.into(),
-            result: None,
-            waiters: 1,
-            created_at: Instant::now(),
-            error: None,
-        }
+        Self { key: key.into(), result: None, waiters: 1, created_at: Instant::now(), error: None }
     }
 
     /// Add a waiter.
