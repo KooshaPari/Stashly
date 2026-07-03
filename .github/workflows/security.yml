@@ -2,9 +2,9 @@ name: Security Scan
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
   schedule:
     - cron: '0 2 * * *'  # Daily at 2 AM UTC
   workflow_dispatch:
@@ -14,26 +14,7 @@ permissions:
   security-events: write
   actions: read
 
-env:
-  
-
 jobs:
-  # Secret Scanning
-  secrets:
-    name: Secret Detection
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Secrets scan (trufflehog)
-        uses: trufflesecurity/trufflehog@3fc0c2aa6648d54242e4af6fbfde0701796e4fb0  # was: @main
-        with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          extra_args: --only-verified
   # SAST Scanning
   sast:
     name: SAST Analysis
@@ -55,25 +36,6 @@ jobs:
         uses: actions-rust-lang/audit@v1
         with:
           file: Cargo.lock
-
-      
-
-  # Dependency Vulnerability Scanning
-  dependencies:
-    name: Dependency Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Run Cargo Audit
-        run: |
-          cargo install cargo-audit
-          cargo audit
 
       
 

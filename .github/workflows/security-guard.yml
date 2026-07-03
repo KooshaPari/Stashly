@@ -1,8 +1,9 @@
 name: Security Guard
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
+    branches: [main]
   schedule:
     - cron: '0 0 * * *'
 jobs:
