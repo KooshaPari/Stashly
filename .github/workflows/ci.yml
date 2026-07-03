@@ -30,6 +30,8 @@ jobs:
   trace-gate:
     name: FR Coverage Gate
     uses: KooshaPari/phenotype-pm-core/.github/workflows/trace-gate.yml@master
+
+  governance-validation:
     name: Governance Validation
     uses: KooshaPari/phenotypeActions/.github/workflows/validate-governance.yml@main
 
