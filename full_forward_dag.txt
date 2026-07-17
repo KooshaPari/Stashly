@@ -1,0 +1,61 @@
+ef72c15 (origin/main, origin/HEAD) chore(deps): bump lru from 0.18.0 to 0.18.1 (#18)
+a997f65 fix(deps): update crossbeam-epoch for RUSTSEC-2026-0204 (#19)
+e83efcf (HEAD -> fix/crossbeam-epoch-rustsec-2026-0204, origin/fix/crossbeam-epoch-rustsec-2026-0204) fix(deps): update crossbeam-epoch for RUSTSEC-2026-0204
+cff0a7c (origin/dependabot/cargo/lru-0.18.1) chore(deps): bump lru from 0.18.0 to 0.18.1
+965b281 (origin/dependabot/cargo/hashlink-0.12.1) chore(deps): bump hashlink from 0.12.0 to 0.12.1
+e3f26f6 (main) chore(deps): bump lru from 0.17.0 to 0.18.0 (#14)
+217969a chore(deps): bump criterion from 0.5.1 to 0.8.2 (#13)
+45f71f6 chore(deps): bump hashlink from 0.11.1 to 0.12.0 (#12)
+a991827 fix(ci): split merged trace-gate/governance-validation job in ci.yml (#16)
+7f98eb5 fix: correct phenotype-pm-core reusable workflow ref to @master (default branch) (#15)
+e175bcb fix: remove duplicate criterion key in Cargo.toml (fixes cargo-deny + pre-commit) (#11)
+a698b98 (origin/fix/cargo-toml-duplicate-key) fix: repair invalid .clippy.toml config blocking clippy in pre-commit
+0a4a210 fix: remove duplicate criterion key in Cargo.toml, fix rustfmt violations
+12101b0 chore: consolidate security workflows to reduce Actions minutes burn (#10)
+9228c2d (origin/chore/consolidate-security-workflows) chore: consolidate security workflows to reduce Actions minutes burn
+e7e695b fix(p3): remediate top audit findings (#9)
+1fffab9 feat(ci): add trace-gate FR coverage gate (#8)
+4b61afe (origin/feat/trace-gate-integration) feat(ci): add trace-gate FR coverage gate
+0fcb018 Merge pull request #7 from KooshaPari/chore/overhaul-2026-06-30
+ac71974 fix(core): restore build; add integration tests, real benchmarks, tracing
+0d6afd4 (origin/fix/p3-rem-Stashly-7) fix(p3): remediate top audit findings
+5bf962d (origin/fix/p3-rem-Stashly-6) fix(p3): remediate top 3 audit findings
+bb87362 Merge pull request #2 from KooshaPari/docs/readme-m
+5d38ddc (origin/docs/readme-m) docs: polish README
+62f9425 Merge pull request #1 from KooshaPari/chore/cargo-fmt-apex
+77db1e2 (origin/chore/cargo-fmt-apex) style: cargo fmt --all (clear repo-wide fmt drift)
+b0c3444 (origin/feat/brand-icon) feat(brand): polygon-glass SVG icon + favicon
+cbcbe6f (origin/wt/stashly-readme-workstate) feat(readme): add work-state header and progress bar
+352cc29 (tag: v1.0.0) ci: bootstrap cargo-deny workflow with workflow_dispatch
+d691de2 chore(governance): add FUNDING.yml
+4d9e2c0 chore: add trufflehog.yml [skip ci]
+e57ba42 chore: add SECURITY.md [skip ci]
+8c371b3 chore: add FUNDING.yml [skip ci]
+499370c chore: add AGENTS.md [skip ci]
+c643436 chore: add CLAUDE.md [skip ci]
+0ae3f3c chore: governance bootstrap [skip ci] (#14)
+436344b docs: add PR template (#13)
+83cad31 chore(deps): update hashlink requirement from 0.8 to 0.11
+4b71ee8 chore(deps): update lru requirement from 0.12 to 0.17
+452244c chore: add OpenSSF Scorecard workflow (audit #256) (#11)
+17450a8 chore(ci): pin floating external actions to SHAs in security.yml (#10)
+1006847 chore(ci): pin floating external actions to SHAs in security-guard.yml (#9)
+050ef84 chore(ci): pin floating external actions to SHAs in security-deep-scan.yml (#8)
+66f1901 chore(ci): pin floating external actions to SHAs in sast.yml (#7)
+5118c36 chore(workflows): dedupe release-drafter via phenoShared reusable (#6)
+75fd4e5 chore(secrets-scan): migrate gitleaks → trufflehog (#5)
+046bae0 feat: add phenotype-cache-adapter and restructure
+f2f53f8 chore: add standardized governance files
+e711e33 chore: add AgilePlus scaffolding
+4c90fc5 chore(infra): add standardized infrastructure files
+64dcd8c ci: add quality gate workflow and pre-commit hooks
+d41d979 docs: add deep journeys, stories, and traceability documentation
+6c4970d docs: add SPEC.md and PLAN.md
+28d111b feat: add SECURITY.md and TEST_COVERAGE_MATRIX.md
+f795094 feat: add CONTRIBUTING.md and SECURITY.md
+9f7ada0 feat: add additional workflows - dependabot, pre-commit, benchmarks
+d53faf9 feat: apply phenotype governance standards
+312c177 feat: add additional workflows and docs - release, security, auto-merge, coverage matrix, qa matrix, verification policy
+b2eaf54 feat: add comprehensive scaffolding - docs, workflows, and policies
+65b5484 feat: initial cachekit scaffold
+34c39ff Initial commit
