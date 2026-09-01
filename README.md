@@ -4,6 +4,8 @@
 
 Stashly is a Rust caching framework for building fast, composable cache layers with TTL, singleflight deduplication, CQRS-style read/write separation, and multiple storage backends across memory, Redis, Memcached, and disk. It is structured as a hexagonal architecture so the cache core stays portable while adapters handle backend-specific behavior, metrics, and persistence concerns.
 
+[![AI slop inside](https://sladge.net/badge.svg)](https://sladge.net) [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/KooshaPari/Stashly/total)](https://github.com/KooshaPari/Stashly/releases)
+
 ## Usage / Quickstart
 
 Add Stashly to your project:
